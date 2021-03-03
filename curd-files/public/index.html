@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2>Result</h2>
+    <div id="overview"></div>
+
+    <h2>Add</h2>
+    <form action="/api" method="post" id="frm-update">
+        <input type="text" name="name" placeholder="name, eg: performance" value="performance">
+        <input type="text" name="author" placeholder="author, eg: 约翰 惠特默" value="约翰 惠特默" />
+        <input type="text" name="description"
+            placeholder="description, eg: The principles and practice of coaching and leadership."
+            value="The principles and practice of coaching and leadership." />
+        <input type="text" name="pages" placeholder="pages, eg: 259" value="259" />
+        <input type="text" name="price" placeholder="price, eg: price" value="price" />
+        <input type="text" name="publish" placeholder="publish, eg: 2019-12" value="2020-11" />
+        <input type="text" name="title" placeholder="高绩效教练" value="高绩效教练" />
+        <button type="submit" id="btn-submit">提交</button>
+    </form>
+
+    <h2>Del</h2>
+    <form action="/api" method="delete" id="frm-remove">
+        <input name="name" placeholder="name, eg: performance" value="performance">
+        <button type="submit" id="btn-remove">删除</button>
+    </form>
+
+    <script>
+
+
+        const Utils = {
+            get: function get(url, success, failed) {
+                fetch(url)
+                    .then((response) => response.json())
+                    .then((response) => success(response))
+                    .catch((error) => failed(error));
+            },
+            post: function post(url, data, success, failed) {
+                return fetch(url, {
+                    body: JSON.stringify(data),
+                    cache: 'no-cache',
+                    credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    method: 'POST',
+                    mode: 'cors'
+                })
+                    .then(response => response.json())
+                    .then(response => success(response))
+                    .catch(error => failed(error));
+            },
+            delete: function (url, data, success, failed) {
+                return fetch(url, {
+                    body: JSON.stringify(data),
+                    cache: 'no-cache',
+                    credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    method: 'DELETE',
+                    mode: 'cors'
+                })
+                    .then(response => response.json())
+                    .then(response => success(response))
+                    .catch(error => failed(error));
+            }
+        }
+
+        const api = '/api';
+
+        function requestData() {
+            const overview = document.getElementById("overview");
+            Utils.get(api, function (response) {
+                overview.innerHTML = JSON.stringify(response, null, 4);
+            }, function (error) {
+                overview.innerHTML = JSON.stringify(error);
+            });
+        }
+
+        function updateData(data) {
+            Utils.post(api, data, function (response) {
+                location.reload();
+            }, function (error) {
+                console.error(error)
+            });
+        }
+
+        function removeData(data) {
+            Utils.delete(api, data, function (response) {
+                location.reload();
+            }, function (error) {
+                console.error(error)
+            });
+        }
+
+        function serizeFormData(form) {
+            const formEntries = new FormData(form).entries();
+            return Object.assign(...Array.from(formEntries, ([x, y]) => ({ [x]: y })));
+        }
+
+        requestData();
+
+        document.getElementById('btn-submit').addEventListener('click', function (e) {
+            e.preventDefault();
+            let data = serizeFormData(document.getElementById('frm-update'));
+            let { name } = data;
+            delete data.name;
+            updateData({ [name]: data });
+        });
+
+        document.getElementById('btn-remove').addEventListener('click', function (e) {
+            e.preventDefault();
+            removeData(serizeFormData(document.getElementById('frm-remove')));
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>
